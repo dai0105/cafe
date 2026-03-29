@@ -1,0 +1,38 @@
+{% for cafe in cafes %}
+<a href="{% url 'cafe_detail' cafe.pk %}" class="cafe-card">
+
+  <div class="card-left">
+    {% if cafe.main_image_url %}
+      <img src="{{ cafe.main_image_url }}" alt="{{ cafe.name }}">
+    {% endif %}
+  </div>
+
+  <div class="card-right">
+      <h2 class="cafe-name">{{ cafe.name }}</h2>
+
+      <div class="rating">
+          ★{{ cafe.avg_rating|floatformat:1 }}
+          <span class="review-count">（口コミ {{ cafe.review_count }}件）</span>
+      </div>
+
+      {% if cafe.catch_copy %}
+        <p class="catch-copy">{{ cafe.catch_copy }}</p>
+      {% endif %}
+
+      <p class="address">{{ cafe.address }}</p>
+
+      {% if cafe.nearest_station %}
+        <p class="info">最寄り：{{ cafe.nearest_station }}</p>
+      {% endif %}
+
+      <p class="info">営業時間：{{ cafe.opening_hours }}</p>
+
+      <div class="card-tags">
+        {% for tag in cafe.tags.all|slice:":3" %}
+          <span class="tag">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+  </div>
+
+</a>
+{% endfor %}

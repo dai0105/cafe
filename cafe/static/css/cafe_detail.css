@@ -1,0 +1,370 @@
+/* ===========================
+   全体レイアウト
+=========================== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-soft);
+  color: #333;
+  line-height: 1.7;
+  padding: 20px;
+}
+
+:root {
+  --accent: #7A5F45;   /* カフェラテのようなブラウン */
+  --bg-soft: #F7F4EF;  /* ほんのりベージュの背景 */
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ===========================
+   タイトル・戻るリンク
+=========================== */
+.back-link {
+  margin: 20px 0;
+}
+
+.back-link a {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #f3efea; /* 淡いベージュ */
+  color: #6b5e52;       /* 落ち着いたブラウン */
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border: 1px solid #e0d9d2; /* 薄い枠線で上品に */
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.back-link a:hover {
+  background: #e8e2dc;
+  transform: translateY(-1px);
+}
+
+.back-link a:active {
+  transform: translateY(0);
+}
+
+.cafe-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 16px 0 24px;
+  color: var(--accent);
+}
+
+.section-title {
+  color: var(--accent);
+}
+
+/* ===========================
+   カフェ画像
+=========================== */
+.main-image img {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto 32px;
+}
+
+.sub-images img {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 12px;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+/* ===========================
+   基本情報
+=========================== */
+.cafe-info {
+  background: #fafafa;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 24px 0;
+  line-height: 1.7;
+}
+
+.cafe-info p {
+  margin-bottom: 14px;
+}
+
+.cafe-info strong {
+  color: #6b5e52; /* 落ち着いたブラウン */
+  font-weight: 600;
+}
+
+.menu-block h3 {
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+  color: #6b5e52;
+  font-weight: 600;
+}
+
+.menu-block ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  margin: 2px 4px 2px 0;
+  background: #f0ece8;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #6b5e52;
+}
+
+
+.sns-links a {
+  color: #007aff;
+  text-decoration: none;
+}
+
+.sns-links a {
+  color: #6b5e52;
+  text-decoration: underline;
+}
+
+
+/* ===========================
+   セクション区切り
+=========================== */
+.section-divider {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.section-title {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+/* ===========================
+   口コミカード
+=========================== */
+.review-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.review-header {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.review-comment {
+  margin-bottom: 12px;
+}
+
+.review-date {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-images img {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+
+
+
+/* ===========================
+   口コミ投稿フォーム
+=========================== */
+.review-form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.review-form label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.review-form input,
+.review-form textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.review-form button {
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.review-form button:hover {
+  background: #6A4F3A;
+}
+
+/* ===========================
+   スマホ最適化
+=========================== */
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
+  .cafe-title {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+}
+
+/* ===========================
+   スライダー（食べログ風）
+=========================== */
+/* メインスライダー */
+.mainSwiper {
+  width: 100%;
+  max-width: 700px;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto 20px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mainSwiper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* サムネイルスライダー */
+.thumbSwiper {
+  width: 100%;
+  max-width: 700px;
+  height: 90px;
+  margin: 0 auto 30px;
+}
+
+.thumbSwiper .swiper-slide {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+.thumbSwiper .swiper-slide-thumb-active {
+  opacity: 1;
+}
+
+.thumbSwiper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--accent) !important;
+}
+
+.load-more-btn {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background: var(--accent); /* カフェラテブラウン */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.load-more-btn:hover {
+  background: #6A4F3A; /* 少し濃いブラウン */
+}
+
+.load-more-btn:active {
+  transform: scale(0.97);
+}
+
+.review-summary {
+  font-size: 15px;
+  color: #6B5847; /* 落ち着いたブラウン */
+  margin-bottom: 10px;
+}
+
+.review-sort {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeIn 0.4s ease forwards;
+  animation-delay: 0.05s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.review-sort a,
+.review-sort button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #F0EAE4;
+  color: #6B5847;
+  text-decoration: none;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.review-sort .active {
+  background: #7A5F45;
+  color: #fff;
+}
+
+.star {
+  color: #7A5F45; /* カフェブラウン */
+  font-weight: bold;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.info-icon {
+  margin-right: 6px;
+  color: #7A5F45; /* カフェブラウン */
+}

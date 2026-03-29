@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ cafe.name }}</title>
+    <link rel="stylesheet" href="{% static 'css/cafe_detail.css' %}">
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+</head>
+
+<body>
+
+<p class="back-link">
+  <a href="/">← 一覧に戻る</a>
+</p>
+
+<h1 class="cafe-title">{{ cafe.name }}</h1>
+
+<!-- ===========================
+     メインスライダー
+=========================== -->
+<div class="swiper mainSwiper">
+  <div class="swiper-wrapper">
+
+    {% with main_image=cafe.images.all|dictsort:"order"|first %}
+      {% if main_image and main_image.image_type == 'main' %}
+        <div class="swiper-slide">
+          <img src="{{ main_image.image_url }}">
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% for img in cafe.images.all|dictsort:"order" %}
+      {% if img.image_type == 'sub' %}
+        <div class="swiper-slide">
+          <img src="{{ img.image_url }}">
+        </div>
+      {% endif %}
+    {% endfor %}
+
+  </div>
+
+  <div class="swiper-pagination"></div>
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+</div>
+
+<!-- ===========================
+     サムネイルスライダー
+=========================== -->
+<div class="swiper thumbSwiper">
+  <div class="swiper-wrapper">
+
+    {% with main_image=cafe.images.all|dictsort:"order"|first %}
+      {% if main_image and main_image.image_type == 'main' %}
+        <div class="swiper-slide">
+          <img src="{{ main_image.image_url }}">
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% for img in cafe.images.all|dictsort:"order" %}
+      {% if img.image_type == 'sub' %}
+        <div class="swiper-slide">
+          <img src="{{ img.image_url }}">
+        </div>
+      {% endif %}
+    {% endfor %}
+
+  </div>
+</div>
+
+<!-- ===========================
+     基本情報
+=========================== -->
+<div class="cafe-info">
+  <p class="description">{{ cafe.description }}</p>
+  <p><strong>営業時間：</strong> {{ cafe.opening_hours }}</p>
+  <p><strong>定休日：</strong> {{ cafe.holiday }}</p>
+
+  {% if cafe.menu1 or cafe.menu2 or cafe.menu3 %}
+    <div class="menu-block">
+      <h3>おすすめメニュー</h3>
+      <ul>
+        {% if cafe.menu1 %}<li>{{ cafe.menu1 }}</li>{% endif %}
+        {% if cafe.menu2 %}<li>{{ cafe.menu2 }}</li>{% endif %}
+        {% if cafe.menu3 %}<li>{{ cafe.menu3 }}</li>{% endif %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <p><strong>設備：</strong>
+    {% if cafe.has_wifi %} Wi-Fiあり {% endif %}
+    {% if cafe.has_power %} / 電源あり {% endif %}
+    {% if cafe.seats %} / 席数：{{ cafe.seats }} {% endif %}
+  </p>
+
+  <p><strong>タグ：</strong>
+    {% for tag in cafe.tags.all %}
+      <span class="tag">{{ tag.name }}</span>
+    {% endfor %}
+  </p>
+
+  <p><strong>住所：</strong> {{ cafe.address }}</p>
+
+  {% if cafe.nearest_station %}
+    <p><strong>最寄り駅：</strong> {{ cafe.nearest_station }}</p>
+  {% endif %}
+
+  {% if cafe.phone %}
+    <p><strong>電話番号：</strong>{{ cafe.phone }}</p>
+  {% endif %}
+
+
+  <p class="sns-links">
+    {% if cafe.website %}
+      <a href="{{ cafe.website }}" target="_blank">公式サイト</a><br>
+    {% endif %}
+    {% if cafe.instagram %}
+      <a href="{{ cafe.instagram }}" target="_blank">Instagram</a>
+    {% endif %}
+  </p>
+</div>
+
+<hr class="section-divider">
+
+<!-- ===========================
+     口コミ一覧
+=========================== -->
+<h2 class="section-title">口コミ一覧</h2>
+
+<p class="review-summary">
+  口コミ {{ total_count }}件  
+  {% if avg_rating %}
+    / 平均 ★{{ avg_rating|floatformat:1 }}
+  {% endif %}
+</p>
+
+<!-- 並び替えタブ（Ajax化） -->
+<div class="review-sort">
+  <button data-sort="new"  class="{% if sort == 'new' %}active{% endif %}">新着順</button>
+  <button data-sort="old"  class="{% if sort == 'old' %}active{% endif %}">古い順</button>
+  <button data-sort="high" class="{% if sort == 'high' %}active{% endif %}">高評価順</button>
+  <button data-sort="low"  class="{% if sort == 'low' %}active{% endif %}">低評価順</button>
+</div>
+
+<div id="review-list">
+  {% for review in initial_reviews %}
+    <div class="review-card">
+      <p class="review-header">
+        <strong>{{ review.name }}</strong>
+        <span class="star">★</span>{{ review.rating }}
+      </p>
+
+      <p class="review-comment">{{ review.comment|linebreaksbr }}</p>
+      <p class="review-date">{{ review.created_at|date:"Y年n月j日 H:i" }}</p>
+
+      <div class="review-images">
+        {% for img in review.images.all|dictsort:"order" %}
+          <img src="{{ img.image_url }}">
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% if total_count > 5 %}
+  <button id="load-more" data-offset="5" class="load-more-btn">もっと見る</button>
+{% endif %}
+
+<hr class="section-divider">
+
+<!-- ===========================
+     口コミ投稿フォーム
+=========================== -->
+<h2 class="section-title">口コミを書く</h2>
+
+<form method="POST" enctype="multipart/form-data" class="review-form">
+  {% csrf_token %}
+
+  <label>評価（1〜5）：</label>
+  <input type="number" name="rating" min="1" max="5" value="5" required>
+
+  <label>コメント：</label>
+  <textarea name="comment" rows="4" required></textarea>
+
+  <label>画像：</label>
+  <input type="file" name="images" multiple>
+
+  <button type="submit">投稿する</button>
+</form>
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+  const thumbSwiper = new Swiper(".thumbSwiper", {
+    slidesPerView: 5,
+    spaceBetween: 8,
+    freeMode: true,
+    watchSlidesProgress: true,
+  });
+
+  const mainSwiper = new Swiper(".mainSwiper", {
+    loop: true,
+    spaceBetween: 10,
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+    thumbs: {
+      swiper: thumbSwiper,
+    },
+  });
+</script>
+
+<!-- 並び替え（Ajax） -->
+<script>
+let currentSort = "{{ sort }}";
+
+document.querySelectorAll(".review-sort button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const sort = btn.dataset.sort;
+    currentSort = sort;
+
+    fetch(`/cafe/{{ cafe.id }}/reviews/?offset=0&sort=${sort}`)
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("review-list").innerHTML = html;
+
+        const loadMore = document.getElementById("load-more");
+        if (loadMore) {
+          loadMore.dataset.offset = 5;
+          loadMore.style.display = "block";
+        }
+
+        document.querySelectorAll(".review-sort button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+  });
+});
+</script>
+
+<!-- もっと見る（Ajax） -->
+<script>
+document.getElementById("load-more")?.addEventListener("click", function() {
+  const btn = this;
+  const offset = btn.dataset.offset;
+
+  fetch(`/cafe/{{ cafe.id }}/reviews/?offset=${offset}&sort=${currentSort}`)
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("review-list").insertAdjacentHTML("beforeend", html);
+      btn.dataset.offset = parseInt(offset) + 5;
+
+      if (parseInt(btn.dataset.offset) >= {{ total_count }}) {
+        btn.style.display = "none";
+      }
+    });
+});
+</script>
+
+</body>
+</html>

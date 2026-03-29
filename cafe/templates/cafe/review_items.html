@@ -1,0 +1,17 @@
+{% for review in reviews %}
+  <div class="review-card">
+    <p class="review-header">
+      <strong>{{ review.name }}</strong>
+      <span class="star">★</span>{{ review.rating }}
+    </p>
+
+    <p class="review-comment">{{ review.comment|linebreaksbr }}</p>
+    <p class="review-date">{{ review.created_at|date:"Y年n月j日 H:i" }}</p>
+
+    <div class="review-images">
+      {% for img in review.images.all|dictsort:"order" %}
+        <img src="{{ img.image_url }}">
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
