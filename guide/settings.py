@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import dj_database_url
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ghfrh8$rj@_5nrko)!$=7eb4$g)w-v#0m3s#nknltet%7alnif'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -74,11 +77,12 @@ WSGI_APPLICATION = 'guide.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        env='DATABASE_URL',
+        conn_max_age=600,
+    )
 }
+
 
 
 # Password validation
@@ -124,9 +128,9 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Cloudflare R2 settings
-R2_ENDPOINT = "https://624001eff91ee0dc44d797059777dd49.r2.cloudflarestorage.com"
-R2_ACCESS_KEY_ID = "0eb3850aefeb65f64ad95920f682bd66"
-R2_SECRET_ACCESS_KEY = "abde7112bc9ee60943aff29985d43b955b847f7d201953df2f22382c75f9033f"
-R2_BUCKET_NAME = "cafe"
-R2_PUBLIC_URL = "https://pub-b3c6397062a045cc82e58a883e94456f.r2.dev"
+R2_ENDPOINT = os.environ.get('R2_ENDPOINT')
+R2_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID')
+R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY')
+R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME')
+R2_PUBLIC_URL = os.environ.get('R2_PUBLIC_URL')
 
