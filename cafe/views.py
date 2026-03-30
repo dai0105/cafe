@@ -7,8 +7,11 @@ from datetime import datetime, timezone
 
 
 def calculate_weight(cafe):
-    # 経過日数
-    days_since_created = (datetime.now(timezone.utc) - cafe.created_at).days
+    # created_at が None の場合に備える
+    if not cafe.created_at:
+        days_since_created = 9999
+    else:
+        days_since_created = (datetime.now(timezone.utc) - cafe.created_at).days
 
     # 新規ブースト
     if days_since_created <= 7:
@@ -18,25 +21,25 @@ def calculate_weight(cafe):
     else:
         new_store_boost = 0
 
-    # タグ一致度（今回はデフォルトなので 0 固定）
-    tag_match_score = 0
+    # None 対策
+    review_count = cafe.review_count or 0
+    avg_rating = cafe.avg_rating or 0
 
-    # 最終スコア
     weight = (
         new_store_boost +
-        tag_match_score * 5 +
-        (cafe.review_count or 0) * 2 +
-        (cafe.avg_rating or 0) * 1
+        review_count * 2 +
+        avg_rating * 1
     )
 
     return max(weight, 1)
 
 
+
 def cafe_list(request):
     # --- GET パラメータ ---
-    q = request.GET.get('q')              # 店名検索
-    tag = request.GET.get('tag')          # タグ絞り込み
-    place = request.GET.get('place')      # 場所（最寄り or 住所）
+    q = request.GET.get('q')
+    tag = request.GET.get('tag')
+    place = request.GET.get('place')
     page = int(request.GET.get('page', 1))
     per_page = 20
 
@@ -61,7 +64,7 @@ def cafe_list(request):
     if tag:
         cafes = cafes.filter(tags__id=tag)
 
-    # --- 場所絞り込み（最寄り + 住所） ---
+    # --- 場所絞り込み ---
     if place:
         cafes = cafes.filter(
             Q(nearest_station__icontains=place) |
@@ -86,7 +89,7 @@ def cafe_list(request):
         k=len(cafes_only)
     )
 
-    # 重複除去（順序保持）
+    # 重複除去
     seen = set()
     unique_sorted_cafes = []
     for c in sorted_cafes:
@@ -102,7 +105,6 @@ def cafe_list(request):
     has_more = len(unique_sorted_cafes) > end
     total_count = len(unique_sorted_cafes)
 
-    # タグ一覧（絞り込み用）
     tags = Tag.objects.all()
 
     return render(request, 'cafe/list.html', {
@@ -115,6 +117,7 @@ def cafe_list(request):
         'place': place,
         'total_count': total_count,
     })
+
 
 def cafe_detail(request, cafe_id):
     cafe = get_object_or_404(Cafe, id=cafe_id)
