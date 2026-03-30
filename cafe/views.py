@@ -3,6 +3,34 @@ from django.http import HttpResponse
 from .models import Cafe, CafeImage, Review, ReviewImage, Tag
 from .utils import upload_to_r2
 from django.db.models import Avg, Subquery, OuterRef, Count, Q
+from datetime import datetime, timezone
+
+
+def calculate_weight(cafe):
+    # 経過日数
+    days_since_created = (datetime.now(timezone.utc) - cafe.created_at).days
+
+    # 新規ブースト
+    if days_since_created <= 7:
+        new_store_boost = 20
+    elif days_since_created <= 30:
+        new_store_boost = 10
+    else:
+        new_store_boost = 0
+
+    # タグ一致度（今回はデフォルトなので 0 固定）
+    tag_match_score = 0
+
+    # 最終スコア
+    weight = (
+        new_store_boost +
+        tag_match_score * 5 +
+        (cafe.review_count or 0) * 2 +
+        (cafe.avg_rating or 0) * 1
+    )
+
+    return max(weight, 1)
+
 
 def cafe_list(request):
     # --- GET パラメータ ---
@@ -10,7 +38,7 @@ def cafe_list(request):
     tag = request.GET.get('tag')          # タグ絞り込み
     place = request.GET.get('place')      # 場所（最寄り or 住所）
     page = int(request.GET.get('page', 1))
-    per_page = 20   # ← ここが重要！
+    per_page = 20
 
     # --- メイン画像のサブクエリ ---
     main_image_subquery = CafeImage.objects.filter(
@@ -40,18 +68,42 @@ def cafe_list(request):
             Q(address__icontains=place)
         )
 
-    # --- デフォルト：評価順（高い順） ---
-    cafes = cafes.order_by('-avg_rating')
+    # --- デフォルト：勢い順（Weighted Random） ---
+    import random
+
+    weighted_list = []
+    for cafe in cafes:
+        weight = calculate_weight(cafe)
+        weighted_list.append((cafe, weight))
+
+    cafes_only = [c for c, w in weighted_list]
+    weights_only = [w for c, w in weighted_list]
+
+    # 重み付きランダム
+    sorted_cafes = random.choices(
+        cafes_only,
+        weights=weights_only,
+        k=len(cafes_only)
+    )
+
+    # 重複除去（順序保持）
+    seen = set()
+    unique_sorted_cafes = []
+    for c in sorted_cafes:
+        if c.id not in seen:
+            unique_sorted_cafes.append(c)
+            seen.add(c.id)
+
+    # --- ページネーション ---
+    start = (page - 1) * per_page
+    end = start + per_page
+    cafes_page = unique_sorted_cafes[start:end]
+
+    has_more = len(unique_sorted_cafes) > end
+    total_count = len(unique_sorted_cafes)
 
     # タグ一覧（絞り込み用）
     tags = Tag.objects.all()
-
-    page = int(request.GET.get('page', 1))
-    start = (page - 1) * per_page
-    end = start + per_page
-    cafes_page = cafes[start:end]
-    has_more = cafes.count() > end
-    total_count = cafes.count()
 
     return render(request, 'cafe/list.html', {
         'cafes': cafes_page,
@@ -146,3 +198,29 @@ def load_more_reviews(request, cafe_id):
     return render(request, "cafe/review_items.html", {
         "reviews": reviews
     })
+
+
+def calculate_weight(store, user_tags):
+    # 経過日数
+    days_since_created = (datetime.now(timezone.utc) - store.created_at).days
+
+    # 新規ブースト
+    if days_since_created <= 7:
+        new_store_boost = 20
+    elif days_since_created <= 30:
+        new_store_boost = 10
+    else:
+        new_store_boost = 0
+
+    # タグ一致度（store.tags が list or set 前提）
+    tag_match_score = len(set(store.tags).intersection(user_tags))
+
+    # 最終スコア
+    weight = (
+        new_store_boost +
+        tag_match_score * 5 +
+        store.review_count * 2 +
+        store.rating * 1
+    )
+
+    return max(weight, 1)  # 重み0だとランダム抽選できないので最低1
