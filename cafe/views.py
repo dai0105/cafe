@@ -4,7 +4,7 @@ from .models import Cafe, CafeImage, Review, ReviewImage, Tag
 from .utils import upload_to_r2
 from django.db.models import Avg, Subquery, OuterRef, Count, Q
 from datetime import datetime, timezone
-
+from django.db.models.functions import Coalesce
 
 from decimal import Decimal
 
@@ -46,16 +46,16 @@ def cafe_list(request):
     page = int(request.GET.get('page', 1))
     per_page = 20
 
-    # --- メイン画像のサブクエリ ---
+    # --- メイン画像のサブクエリ（安全版） ---
     main_image_subquery = CafeImage.objects.filter(
         cafe=OuterRef('pk'),
         image_type='main'
     ).values('image_url')[:1]
 
-    # --- ベースクエリ ---
+    # --- ベースクエリ（Coalesce で NULL を許容） ---
     cafes = Cafe.objects.annotate(
         avg_rating=Avg('reviews__rating'),
-        main_image_url=Subquery(main_image_subquery),
+        main_image_url=Coalesce(Subquery(main_image_subquery), None),
         review_count=Count('reviews')
     )
 
