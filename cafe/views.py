@@ -5,6 +5,8 @@ from .utils import upload_to_r2
 from django.db.models import Avg, Subquery, OuterRef, Count, Q
 from datetime import datetime, timezone
 from django.db.models.functions import Coalesce
+from django.db.models import Value, FloatField, IntegerField
+
 
 from decimal import Decimal
 
@@ -54,10 +56,11 @@ def cafe_list(request):
 
     # --- ベースクエリ（Coalesce で NULL を許容） ---
     cafes = Cafe.objects.annotate(
-        avg_rating=Avg('reviews__rating'),
-        main_image_url=Coalesce(Subquery(main_image_subquery), None),
-        review_count=Count('reviews')
+        avg_rating=Coalesce(Avg('reviews__rating'), Value(0.0), output_field=FloatField()),
+        main_image_url=Coalesce(Subquery(main_image_subquery), Value(None)),
+        review_count=Coalesce(Count('reviews'), Value(0), output_field=IntegerField())
     )
+
 
     # --- 店名検索 ---
     if q:
