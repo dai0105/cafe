@@ -6,24 +6,27 @@ from django.db.models import Avg, Subquery, OuterRef, Count, Q
 from datetime import datetime, timezone
 
 
-def calculate_weight(cafe):
-    # created_at が None の場合に備える
-    if not cafe.created_at:
-        days_since_created = 9999
-    else:
-        days_since_created = (datetime.now(timezone.utc) - cafe.created_at).days
+from decimal import Decimal
 
-    # 新規ブースト
-    if days_since_created <= 7:
+def calculate_weight(cafe):
+    # 新規ブースト（ID が新しいほど強い）
+    # 例：最新ID → +20、少し古い → +10、それ以外 → 0
+    if cafe.id >= (Cafe.objects.latest('id').id - 5):
         new_store_boost = 20
-    elif days_since_created <= 30:
+    elif cafe.id >= (Cafe.objects.latest('id').id - 20):
         new_store_boost = 10
     else:
         new_store_boost = 0
 
-    # None 対策
+    # None → 0
     review_count = cafe.review_count or 0
-    avg_rating = cafe.avg_rating or 0
+
+    # Decimal → float
+    avg_rating_raw = cafe.avg_rating or 0
+    if isinstance(avg_rating_raw, Decimal):
+        avg_rating = float(avg_rating_raw)
+    else:
+        avg_rating = float(avg_rating_raw)
 
     weight = (
         new_store_boost +
@@ -31,7 +34,7 @@ def calculate_weight(cafe):
         avg_rating * 1
     )
 
-    return max(weight, 1)
+    return max(float(weight), 1.0)
 
 
 
