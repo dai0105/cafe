@@ -77,33 +77,26 @@ def cafe_list(request):
     weighted_list = []
     for cafe in cafes:
         weight = calculate_weight(cafe)
-        weighted_list.append((cafe, weight))
 
-    cafes_only = [c for c, w in weighted_list]
-    weights_only = [w for c, w in weighted_list]
+        # ランダム揺らしを加えてソート用スコアを作る
+        random_factor = random.uniform(0.8, 1.2)
+        final_score = weight * random_factor
 
-    # 重み付きランダム
-    sorted_cafes = random.choices(
-        cafes_only,
-        weights=weights_only,
-        k=len(cafes_only)
-    )
+        weighted_list.append((final_score, cafe))
 
-    # 重複除去
-    seen = set()
-    unique_sorted_cafes = []
-    for c in sorted_cafes:
-        if c.id not in seen:
-            unique_sorted_cafes.append(c)
-            seen.add(c.id)
+    # スコアの高い順にソート
+    weighted_list.sort(key=lambda x: x[0], reverse=True)
+
+    # カフェだけ取り出す
+    sorted_cafes = [c for score, c in weighted_list]
 
     # --- ページネーション ---
     start = (page - 1) * per_page
     end = start + per_page
-    cafes_page = unique_sorted_cafes[start:end]
+    cafes_page = sorted_cafes[start:end]
 
-    has_more = len(unique_sorted_cafes) > end
-    total_count = len(unique_sorted_cafes)
+    has_more = len(sorted_cafes) > end
+    total_count = len(sorted_cafes)
 
     tags = Tag.objects.all()
 
